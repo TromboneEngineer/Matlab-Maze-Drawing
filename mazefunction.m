@@ -1,29 +1,36 @@
-function mazefunctionRemastered
+function mazefunction
 clear all; close all; figure; hold all;
 set(gca,'XTickLabel',''); set(gca,'YTickLabel',''); set(gca,'Color','w');
-global xmax ymax width PathsPerSide ytop ybot pausetime pathdistance pairs j
-xmax=600; % the length of the visible screen
-ymax=600; % the height of the visible screen
-width=10; % the distance between paths
-PathsPerSide=5; % the number of paths that split from the beginning
-pausetime=.0005; % 0, 0.001;
-[PathsPerSide]=pathnumfun;
-[pairs]=matchingindexfun;
-ypoint=zeros(1,2*PathsPerSide);
-[xpoint(1,1:PathsPerSide),ypoint(1,1:PathsPerSide)]=openingfun(0,1);
-[xpoint(1,1+PathsPerSide:2*PathsPerSide),ypoint(1,1+PathsPerSide:2*PathsPerSide)]=openingfun(xmax,-1);
+global xmax ymax width paths ytop ybot pausetime pathcolor pathdistance pairs j
+xmax=1000;%10000 % the length of the visible screen
+ymax=1000;%10000 % the height of the visible screen
+width=18; % the distance between paths
+paths=20;%201 % the number of paths that split from the beginning
+pausetime=.05; % 0, 0.001;
+%widthrange
+[paths]=pathnum;
+[pairs]=matchingindex;
+%pathcolor='w';
+pathcolor='wbgykrmc';
+colormap(jet(600));
+while length(pathcolor)<=2*paths
+    pathcolor=[pathcolor,pathcolor];
+end
+ypoint=zeros(1,2*paths);
+[xpoint(1,1:paths),ypoint(1,1:paths)]=opening(0,1);
+[xpoint(1,1+paths:2*paths),ypoint(1,1+paths:2*paths)]=opening(xmax,-1);
 iterations=13; % 3, 30;
 
-lineangleA(1,:)=(pi/2)*ones(1,PathsPerSide);
+lineangleA(1,:)=(pi/2)*ones(1,paths);
 lineangleB(1,:)=-lineangleA;
 lineangle=[lineangleA,lineangleB];
 for i=1:iterations
-    for j=1:2*PathsPerSide
+    for j=1:2*paths
         [xpoint(i+1,j),ypoint(i+1,j),lineangle(i+1,j)]=drawmaze(xpoint(i,j),ypoint(i,j),lineangle(i,j));
     end
 end
-openingfun(0,1);
-openingfun(xmax,-1);
+opening(0,1);
+opening(xmax,-1);
 
     function [xout,yout,lineangleout]=drawmaze(xinitial,yinitial,lineanglein)
         [xline,yline,x1,y1,x2,y2,xout,yout,lineangleout]=calculate(xinitial,yinitial,lineanglein);
@@ -128,7 +135,7 @@ openingfun(xmax,-1);
             pause(pausetime);
         end
     end
-    function [pathsout]=pathnumfun
+    function [pathsout]=pathnum
         ytop=ymax-2*width;
         ybot=0+2*width;
         maxpath=(ytop-ybot+2*width)/(3*width);
@@ -137,17 +144,17 @@ openingfun(xmax,-1);
         else
             maxpath=round(maxpath);
         end
-        if PathsPerSide > maxpath
-            PathsPerSide=maxpath;
+        if paths > maxpath
+            paths=maxpath;
         end
-        if mod(PathsPerSide,2)==0
-            PathsPerSide=PathsPerSide-1;
+        if mod(paths,2)==0
+            paths=paths-1;
         end
-        pathsout=PathsPerSide;
+        pathsout=paths;
     end
-    function [xout,yout]=openingfun(xref,xdir)
+    function [xout,yout]=opening(xref,xdir)
 %        ytop=ymax-width/2; ybot=width/2;
-        straight=ytop-ybot-(3*width*(PathsPerSide-1)+width);
+        straight=ytop-ybot-(3*width*(paths-1)+width);
         xintro1=[xref,xref+xdir*width];
         yintro1a=[ymax/2+width/2,ymax/2+width/2];
         yintro1b=[ymax/2-width/2,ymax/2-width/2];
@@ -161,9 +168,9 @@ openingfun(xmax,-1);
         plot([xvertical,xvertical],yvertical(1:2),'k')
         plot([xvertical,xvertical],yvertical(3:4),'k')
         xvertical=xref+xdir*3*width;
-        for j=1:PathsPerSide-1
-            yvertical(j)=ybot+2*width+(j-1)*(3*width+straight/(PathsPerSide-1));
-            yvertical2(j)=ybot+2*width+straight/(PathsPerSide-1)+(j-1)*(3*width+straight/(PathsPerSide-1));
+        for j=1:paths-1
+            yvertical(j)=ybot+2*width+(j-1)*(3*width+straight/(paths-1));
+            yvertical2(j)=ybot+2*width+straight/(paths-1)+(j-1)*(3*width+straight/(paths-1));
             plot([xvertical,xvertical],[yvertical(j),yvertical2(j)],'k');
         end
         
@@ -198,17 +205,17 @@ openingfun(xmax,-1);
         plot(xoutertop,youtertop,'k')
         
         h=4*width; r=width;
-        for j=1:PathsPerSide-1
-            a=pi; b=3*pi/2; k=ybot+2*width+(3*width+straight/(PathsPerSide-1))*(j-1);
+        for j=1:paths-1
+            a=pi; b=3*pi/2; k=ybot+2*width+(3*width+straight/(paths-1))*(j-1);
             xinner(j,:)=xref+xdir*(r*cos(linspace(a,b))+h);
             yinner(j,:)=r*sin(linspace(a,b))+k;
-            a=pi/2; b=pi; k=k+straight/(PathsPerSide-1);
-            xinner(PathsPerSide-1+j,:)=xref+xdir*(r*cos(linspace(a,b))+h);
-            yinner(PathsPerSide-1+j,:)=r*sin(linspace(a,b))+k;
+            a=pi/2; b=pi; k=k+straight/(paths-1);
+            xinner(paths-1+j,:)=xref+xdir*(r*cos(linspace(a,b))+h);
+            yinner(paths-1+j,:)=r*sin(linspace(a,b))+k;
         end
-        for j=1:PathsPerSide-2
-            X=[xinner(PathsPerSide-1+j,:),xinner(j+1,:)];
-            Y=[yinner(PathsPerSide-1+j,:),yinner(j+1,:)];
+        for j=1:paths-2
+            X=[xinner(paths-1+j,:),xinner(j+1,:)];
+            Y=[yinner(paths-1+j,:),yinner(j+1,:)];
             pathfill(X,Y,2)
         end
         X=[xinner(1,:),fliplr(xouterbot(xindex1:end))];
@@ -217,12 +224,12 @@ openingfun(xmax,-1);
         X=[xinner(end,:),fliplr(xoutertop(1:xindex2))];
         Y=[yinner(end,:),fliplr(youtertop(1:xindex2))];
         pathfill(X,Y,2)
-        for j=1:2*PathsPerSide-2
+        for j=1:2*paths-2
             plot(xinner(j,:),yinner(j,:),'k')
         end
-        for j=1:PathsPerSide
+        for j=1:paths
             xout(1,j)=xref+xdir*4*width;
-            yout(1,j)=ybot+.5*width+(j-1)*(3*width+straight/(PathsPerSide-1));
+            yout(1,j)=ybot+.5*width+(j-1)*(3*width+straight/(paths-1));
         end
     end
     function pathfill(X,Y,mode)
@@ -233,15 +240,15 @@ openingfun(xmax,-1);
 %         else
 %         h=fill(X,Y,pathcolor(1));
 %         end
-        h=fill(X,Y,'w');
+        h=fill(X,Y,X);
         set(h,'EdgeColor','None');
     end
-    function [pairs]=matchingindexfun
-        list=1:PathsPerSide;
+    function [pairs]=matchingindex
+        list=1:paths;
         leftorder=list(randperm(length(list)));
-        rightorder=list(randperm(length(list)))+PathsPerSide;
+        rightorder=list(randperm(length(list)))+paths;
         connectpair(:,1)=[leftorder(end),rightorder(end)];
-        for i=1:(PathsPerSide-1)/2
+        for i=1:(paths-1)/2
             leftpair(:,i)=[leftorder(2*i-1),leftorder(2*i)];
             rightpair(:,i)=[rightorder(2*i-1),rightorder(2*i)];
         end
